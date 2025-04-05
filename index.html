@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productivity Pro | Task Management</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-rocket"></i>
+                <h1>Productivity Pro</h1>
+            </div>
+            
+            <div class="user-profile">
+                <img src="assets/images/user-avatar.jpg" alt="User Avatar" id="user-avatar">
+                <div>
+                    <h3 id="username-display">John Doe</h3>
+                    <p id="user-email">john@example.com</p>
+                </div>
+            </div>
+            
+            <nav class="main-nav">
+                <ul>
+                    <li class="active"><a href="#"><i class="fas fa-tasks"></i> My Tasks</a></li>
+                    <li><a href="#"><i class="fas fa-calendar-day"></i> Today</a></li>
+                    <li><a href="#"><i class="fas fa-calendar-week"></i> Upcoming</a></li>
+                    <li><a href="#"><i class="fas fa-star"></i> Important</a></li>
+                    <li><a href="#"><i class="fas fa-check-circle"></i> Completed</a></li>
+                </ul>
+            </nav>
+            
+            <div class="projects-section">
+                <div class="projects-header">
+                    <h3>Projects</h3>
+                    <button id="add-project"><i class="fas fa-plus"></i></button>
+                </div>
+                <ul id="projects-list">
+                    <li><a href="#"><i class="fas fa-briefcase"></i> Work</a></li>
+                    <li><a href="#"><i class="fas fa-home"></i> Personal</a></li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button id="settings-btn"><i class="fas fa-cog"></i> Settings</button>
+                <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="main-header">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search tasks..." id="task-search">
+                </div>
+                <div class="header-actions">
+                    <button id="add-task-btn" class="primary-btn">
+                        <i class="fas fa-plus"></i> Add Task
+                    </button>
+                    <div class="notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="content-header">
+                <h2>My Tasks</h2>
+                <div class="task-filters">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="today">Today</button>
+                    <button class="filter-btn" data-filter="important">Important</button>
+                    <button class="filter-btn" data-filter="completed">Completed</button>
+                </div>
+            </div>
+            
+            <div class="tasks-container">
+                <div class="task-list-header">
+                    <span>Task Name</span>
+                    <span>Due Date</span>
+                    <span>Priority</span>
+                    <span>Actions</span>
+                </div>
+                
+                <ul class="task-list" id="task-list">
+                    <!-- Tasks will be dynamically added here -->
+                </ul>
+            </div>
+            
+            <!-- Task Statistics -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <h3>Total Tasks</h3>
+                    <p id="total-tasks">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Completed</h3>
+                    <p id="completed-tasks">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending</h3>
+                    <p id="pending-tasks">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Overdue</h3>
+                    <p id="overdue-tasks">0</p>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Add Task Modal -->
+        <div class="modal" id="task-modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Add New Task</h2>
+                <form id="task-form">
+                    <div class="form-group">
+                        <label for="task-title">Task Title</label>
+                        <input type="text" id="task-title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="task-description">Description</label>
+                        <textarea id="task-description" rows="3"></textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="task-due-date">Due Date</label>
+                            <input type="datetime-local" id="task-due-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="task-priority">Priority</label>
+                            <select id="task-priority">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="task-project">Project</label>
+                            <select id="task-project">
+                                <option value="personal">Personal</option>
+                                <option value="work">Work</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="task-important"> Mark as Important
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="task-reminder"> Set Reminder
+                        </label>
+                    </div>
+                    <button type="submit" class="primary-btn">Save Task</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Add Project Modal -->
+        <div class="modal" id="project-modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Add New Project</h2>
+                <form id="project-form">
+                    <div class="form-group">
+                        <label for="project-name">Project Name</label>
+                        <input type="text" id="project-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="project-color">Color</label>
+                        <input type="color" id="project-color" value="#4e73df">
+                    </div>
+                    <button type="submit" class="primary-btn">Create Project</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Notification Modal -->
+        <div class="modal" id="notification-modal">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h2>Notifications</h2>
+                <ul class="notification-list" id="notification-list">
+                    <!-- Notifications will be added here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/app.js"></script>
+    <script src="js/azure.js"></script>
+</body>
+</html>
