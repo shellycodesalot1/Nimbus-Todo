@@ -2,452 +2,502 @@ document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const taskForm = document.getElementById('task-form');
     const taskModal = document.getElementById('task-modal');
+    const listForm = document.getElementById('project-form');
+    const listModal = document.getElementById('project-modal');
     const addTaskBtn = document.getElementById('add-task-btn');
+    const addListBtn = document.getElementById('add-project');
     const closeModalBtns = document.querySelectorAll('.close-modal');
     const taskList = document.getElementById('task-list');
     const taskSearch = document.getElementById('task-search');
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    const projectModal = document.getElementById('project-modal');
-    const addProjectBtn = document.getElementById('add-project');
-    const projectForm = document.getElementById('project-form');
-    const notificationModal = document.getElementById('notification-modal');
-    const notificationsBtn = document.querySelector('.notifications');
-    const logoutBtn = document.getElementById('logout-btn');
+    const taskDetails = document.querySelector('.task-details');
+    const closeDetailsBtn = document.querySelector('.close-details');
+    const navLinks = document.querySelectorAll('.main-nav a');
+    const listsList = document.getElementById('projects-list');
+    const listSelect = document.getElementById('task-project');
     
-    // Sample tasks data (in a real app, this would come from a database)
-    let tasks = [
+    // Default lists data
+    const defaultLists = [
         {
-            id: 1,
-            title: 'Complete project proposal',
-            description: 'Finish the proposal document and send to client',
-            dueDate: '2023-06-15T14:00',
-            priority: 'high',
-            project: 'work',
-            important: true,
-            completed: false,
-            reminderSet: true
+            id: 'personal',
+            name: 'Personal',
+            color: '#6366f1'
         },
         {
-            id: 2,
-            title: 'Grocery shopping',
-            description: 'Buy fruits, vegetables, and milk',
-            dueDate: '2023-06-10T18:00',
-            priority: 'medium',
-            project: 'personal',
-            important: false,
-            completed: false,
-            reminderSet: false
+            id: 'work',
+            name: 'Work',
+            color: '#22c55e'
         },
         {
-            id: 3,
-            title: 'Morning run',
-            description: '5km run in the park',
-            dueDate: '2023-06-11T07:00',
-            priority: 'low',
-            project: 'personal',
-            important: true,
-            completed: true,
-            reminderSet: true
+            id: 'shopping',
+            name: 'Shopping',
+            color: '#f59e0b'
         }
     ];
     
-    // Current filter
-    let currentFilter = 'all';
+    // Default tasks data
+    const defaultTasks = [
+        {
+            id: 1,
+            title: 'Code Review',
+            description: 'Review the latest pull request for the authentication feature',
+            dueDate: '2024-04-22T14:00',
+            priority: 'high',
+            list: 'dev',
+            tag: 'Dev',
+            completed: false
+        },
+        {
+            id: 2,
+            title: 'Meetings with Ragazo Company',
+            description: 'Discuss project requirements and timeline',
+            dueDate: '2024-04-22T12:00',
+            priority: 'medium',
+            list: 'meetings',
+            tag: 'Meeting',
+            completed: false
+        },
+        {
+            id: 3,
+            title: 'Documenting on Github',
+            description: 'Create a documentation for Github project that we have created a project with successfully, push it on them.',
+            dueDate: '2024-04-22T09:30',
+            priority: 'low',
+            list: 'dev',
+            tag: 'Dev',
+            completed: false
+        }
+    ];
+    
+    // Load data from localStorage or use defaults
+    let lists = loadFromLocalStorage('lists') || defaultLists;
+    let tasks = loadFromLocalStorage('tasks') || defaultTasks;
     
     // Initialize the app
     function init() {
+        renderLists();
         renderTasks();
-        updateTaskStats();
-        checkReminders();
-        
-        // Load user data if authenticated
-        if (isAuthenticated()) {
-            loadUserData();
-        } else {
-            // Redirect to login if not authenticated
-            window.location.href = 'auth/login.html';
-        }
+        setupEventListeners();
+        // Ensure task details panel is closed on page load
+        taskDetails.classList.remove('open');
     }
     
-    // Check if user is authenticated
-    function isAuthenticated() {
-        // In a real app, this would check for a valid auth token
-        return localStorage.getItem('authToken') !== null;
+    // Setup event listeners
+    function setupEventListeners() {
+        // Navigation
+        navLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                navLinks.forEach(l => l.parentElement.classList.remove('active'));
+                this.parentElement.classList.add('active');
+                const section = this.textContent.trim();
+                updateHeader(section);
+                filterTasksBySection(section);
+            });
+        });
+        
+        // Task interactions
+        taskList.addEventListener('click', handleTaskClick);
+        
+        // Task details panel
+        closeDetailsBtn.addEventListener('click', () => {
+            taskDetails.classList.remove('open');
+        });
+        
+        // Search
+        taskSearch.addEventListener('input', handleSearch);
+        
+        // Add task
+        addTaskBtn.addEventListener('click', () => openModal(taskModal));
+        
+        // Add list
+        addListBtn.addEventListener('click', () => openModal(listModal));
+        
+        // Close modals using X button
+        closeModalBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const modal = btn.closest('.modal');
+                closeModal(modal);
+            });
+        });
+        
+        // Task form submission
+        taskForm.addEventListener('submit', handleTaskSubmit);
+        
+        // List form submission
+        listForm.addEventListener('submit', handleListSubmit);
+
+        // List delete buttons
+        listsList.addEventListener('click', handleListClick);
     }
     
-    // Load user data
-    function loadUserData() {
-        // In a real app, this would fetch user data from the server
-        const userData = JSON.parse(localStorage.getItem('userData')) || {
-            name: 'John Doe',
-            email: 'john@example.com',
-            avatar: 'assets/images/user-avatar.jpg'
-        };
-        
-        document.getElementById('username-display').textContent = userData.name;
-        document.getElementById('user-email').textContent = userData.email;
-        document.getElementById('user-avatar').src = userData.avatar;
-    }
-    
-    // Render tasks based on current filter
-    function renderTasks() {
-        taskList.innerHTML = '';
-        
-        let filteredTasks = [...tasks];
-        
-        // Apply filter
-        if (currentFilter === 'today') {
-            const today = new Date().toISOString().split('T')[0];
-            filteredTasks = filteredTasks.filter(task => 
-                task.dueDate && task.dueDate.startsWith(today)
-            );
-        } else if (currentFilter === 'important') {
-            filteredTasks = filteredTasks.filter(task => task.important);
-        } else if (currentFilter === 'completed') {
-            filteredTasks = filteredTasks.filter(task => task.completed);
-        }
-        
-        // Apply search
-        if (taskSearch.value) {
-            const searchTerm = taskSearch.value.toLowerCase();
-            filteredTasks = filteredTasks.filter(task => 
-                task.title.toLowerCase().includes(searchTerm) || 
-                (task.description && task.description.toLowerCase().includes(searchTerm))
-            );
-        }
-        
-        if (filteredTasks.length === 0) {
-            taskList.innerHTML = '<li class="no-tasks">No tasks found</li>';
+    // Handle list clicks (including delete)
+    function handleListClick(e) {
+        const listItem = e.target.closest('li');
+        if (!listItem) return;
+
+        // Handle delete button click
+        if (e.target.classList.contains('fa-times') || e.target.classList.contains('delete-project')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const listId = listItem.dataset.listId;
+            deleteList(listId);
             return;
         }
+
+        // Handle list selection
+        e.preventDefault();
+        const listId = listItem.dataset.listId;
+        const listName = lists.find(l => l.id === listId)?.name;
         
-        filteredTasks.forEach(task => {
-            const taskItem = document.createElement('li');
-            taskItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+        // Update active states
+        document.querySelectorAll('#projects-list li').forEach(li => li.classList.remove('active'));
+        document.querySelectorAll('.main-nav li').forEach(li => li.classList.remove('active'));
+        listItem.classList.add('active');
+        
+        // Update header and filter tasks
+        updateHeader(listName);
+        filterTasksBySection('list', listId);
+    }
+
+    // Delete a list
+    function deleteList(listId) {
+        if (confirm('Are you sure you want to delete this list? All associated tasks will be deleted.')) {
+            // Delete all tasks associated with this list
+            tasks = tasks.filter(task => task.list !== listId);
             
-            const dueDate = new Date(task.dueDate);
-            const formattedDate = task.dueDate ? dueDate.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }) : 'No due date';
+            // Remove the list
+            lists = lists.filter(list => list.id !== listId);
             
-            taskItem.innerHTML = `
-                <div class="task-info">
-                    <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} data-id="${task.id}">
-                    <div>
-                        <div class="task-title">${task.title}</div>
-                        ${task.description ? `<div class="task-description">${task.description}</div>` : ''}
-                    </div>
-                </div>
-                <div class="task-due-date">${formattedDate}</div>
-                <div class="task-priority priority-${task.priority}">${task.priority}</div>
-                <div class="task-actions">
-                    <button class="task-btn important ${task.important ? 'active' : ''}" data-id="${task.id}">
-                        <i class="fas fa-star"></i>
+            // Update UI
+            renderLists();
+            renderTasks();
+            saveToLocalStorage('lists', lists);
+            saveToLocalStorage('tasks', tasks);
+        }
+    }
+
+    // Delete a task
+    function deleteTask(taskId) {
+        if (confirm('Are you sure you want to delete this task?')) {
+            tasks = tasks.filter(task => task.id !== taskId);
+            renderTasks();
+            saveToLocalStorage('tasks', tasks);
+            // Close task details panel if the deleted task was being viewed
+            taskDetails.classList.remove('open');
+        }
+    }
+    
+    // Render lists in the sidebar and task form
+    function renderLists() {
+        // Update sidebar list
+        listsList.innerHTML = lists.map(list => `
+            <li data-list-id="${list.id}">
+                <a href="#">
+                    <i class="fas fa-circle" style="color: ${list.color};"></i>
+                    ${list.name}
+                    <button class="delete-project" title="Delete List">
+                        <i class="fas fa-times"></i>
                     </button>
-                    <button class="task-btn edit" data-id="${task.id}">
-                        <i class="fas fa-edit"></i>
+                </a>
+            </li>
+        `).join('');
+        
+        // Update task form list select
+        listSelect.innerHTML = lists.map(list => `
+            <option value="${list.id}">${list.name}</option>
+        `).join('');
+        
+        // Save to localStorage
+        saveToLocalStorage('lists', lists);
+    }
+    
+    // Handle list form submission
+    function handleListSubmit(e) {
+        e.preventDefault();
+        
+        const listName = document.getElementById('project-name').value.trim();
+        const listColor = document.getElementById('project-color').value;
+        
+        // Create new list
+        const newList = {
+            id: listName.toLowerCase().replace(/\s+/g, '-'),
+            name: listName,
+            color: listColor
+        };
+        
+        // Add to lists array
+        lists.push(newList);
+        
+        // Update UI and save
+        renderLists();
+        
+        // Reset form and close modal
+        listForm.reset();
+        closeModal(listModal);
+    }
+    
+    // Render tasks in the list
+    function renderTasks(filteredTasks = tasks) {
+        taskList.innerHTML = filteredTasks.map(task => `
+            <div class="task-item" data-task-id="${task.id}">
+                <div class="task-title">${task.title}</div>
+                <div class="task-date">${formatDate(task.dueDate)}</div>
+                <div class="task-priority priority-${task.priority}">${capitalizeFirst(task.priority)}</div>
+                <div class="task-status">
+                    <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''}>
+                    <button class="favorite-task ${task.important ? 'active' : ''}" 
+                            data-active="${task.important}" 
+                            title="Mark as Important">
+                        <i class="fa-${task.important ? 'solid' : 'regular'} fa-star" 
+                           style="color: ${task.important ? '#f59e0b' : 'var(--secondary-color)'}"></i>
                     </button>
-                    <button class="task-btn delete" data-id="${task.id}">
+                    <button class="delete-task" title="Delete Task">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
-            `;
-            
-            taskList.appendChild(taskItem);
-        });
-        
-        // Add event listeners to task buttons
-        document.querySelectorAll('.task-checkbox').forEach(checkbox => {
-            checkbox.addEventListener('change', toggleTaskComplete);
-        });
-        
-        document.querySelectorAll('.task-btn.important').forEach(btn => {
-            btn.addEventListener('click', toggleTaskImportant);
-        });
-        
-        document.querySelectorAll('.task-btn.edit').forEach(btn => {
-            btn.addEventListener('click', editTask);
-        });
-        
-        document.querySelectorAll('.task-btn.delete').forEach(btn => {
-            btn.addEventListener('click', deleteTask);
-        });
-    }
-    
-    // Update task statistics
-    function updateTaskStats() {
-        const totalTasks = tasks.length;
-        const completedTasks = tasks.filter(task => task.completed).length;
-        const pendingTasks = totalTasks - completedTasks;
-        
-        // Simple overdue check (in a real app, this would be more robust)
-        const today = new Date();
-        const overdueTasks = tasks.filter(task => 
-            !task.completed && 
-            task.dueDate && 
-            new Date(task.dueDate) < today
-        ).length;
-        
-        document.getElementById('total-tasks').textContent = totalTasks;
-        document.getElementById('completed-tasks').textContent = completedTasks;
-        document.getElementById('pending-tasks').textContent = pendingTasks;
-        document.getElementById('overdue-tasks').textContent = overdueTasks;
-    }
-    
-    // Check for reminders
-    function checkReminders() {
-        const now = new Date();
-        const soon = new Date(now.getTime() + 30 * 60 * 1000); // 30 minutes from now
-        
-        tasks.forEach(task => {
-            if (task.reminderSet && task.dueDate && !task.completed) {
-                const dueDate = new Date(task.dueDate);
-                
-                if (dueDate > now && dueDate <= soon) {
-                    showReminderNotification(task);
-                }
-            }
-        });
-    }
-    
-    // Show reminder notification
-    function showReminderNotification(task) {
-        const notificationList = document.getElementById('notification-list');
-        const notificationItem = document.createElement('li');
-        notificationItem.className = 'notification-item';
-        
-        notificationItem.innerHTML = `
-            <div class="notification-icon">
-                <i class="fas fa-bell"></i>
             </div>
-            <div class="notification-info">
-                <div class="notification-title">Reminder: ${task.title}</div>
-                <div class="notification-time">Due soon</div>
+        `).join('');
+        
+        // Save to localStorage
+        saveToLocalStorage('tasks', tasks);
+    }
+    
+    // Handle task click
+    function handleTaskClick(e) {
+        const taskItem = e.target.closest('.task-item');
+        if (!taskItem) return;
+        
+        // Handle checkbox click
+        if (e.target.classList.contains('task-checkbox')) {
+            const taskId = parseInt(taskItem.dataset.taskId);
+            toggleTaskComplete(taskId);
+            return;
+        }
+
+        // Handle favorite button click
+        if (e.target.closest('.favorite-task')) {
+            const taskId = parseInt(taskItem.dataset.taskId);
+            toggleTaskImportant(taskId);
+            return;
+        }
+
+        // Handle delete button click
+        if (e.target.closest('.delete-task')) {
+            const taskId = parseInt(taskItem.dataset.taskId);
+            deleteTask(taskId);
+            return;
+        }
+        
+        // Select task and show details
+        document.querySelectorAll('.task-item').forEach(item => item.classList.remove('selected'));
+        taskItem.classList.add('selected');
+        
+        const taskId = parseInt(taskItem.dataset.taskId);
+        const task = tasks.find(t => t.id === taskId);
+        if (task) {
+            selectTask(task);
+        }
+    }
+    
+    // Select a task and show its details
+    function selectTask(task) {
+        taskDetails.classList.add('open');
+        
+        const detailsHtml = `
+            <div class="task-details-header">
+                <div>
+                    <h2 class="task-details-title">${task.title}</h2>
+                    <span class="task-tag">${task.tag}</span>
+                </div>
+                <button class="close-details">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="task-details-content">
+                <div class="task-detail-section">
+                    <span class="detail-label">Description</span>
+                    <p class="task-description">${task.description}</p>
+                </div>
+                
+                <div class="task-detail-section">
+                    <span class="detail-label">Due Date</span>
+                    <p class="detail-value">${formatDateLong(task.dueDate)}</p>
+                </div>
+                
+                <div class="task-detail-section">
+                    <span class="detail-label">Priority</span>
+                    <div class="task-priority priority-${task.priority}">${capitalizeFirst(task.priority)}</div>
+                </div>
             </div>
         `;
         
-        notificationList.appendChild(notificationItem);
+        taskDetails.innerHTML = detailsHtml;
         
-        // Show notification badge
-        const badge = document.querySelector('.notification-badge');
-        const currentCount = parseInt(badge.textContent) || 0;
-        badge.textContent = currentCount + 1;
-        badge.style.display = 'flex';
+        // Reattach close button event listener
+        taskDetails.querySelector('.close-details').addEventListener('click', () => {
+            taskDetails.classList.remove('open');
+        });
     }
     
-    // Toggle task completion status
-    function toggleTaskComplete(e) {
-        const taskId = parseInt(e.target.dataset.id);
-        const taskIndex = tasks.findIndex(task => task.id === taskId);
-        
-        if (taskIndex !== -1) {
-            tasks[taskIndex].completed = e.target.checked;
-            renderTasks();
-            updateTaskStats();
-            saveTasks();
-        }
-    }
-    
-    // Toggle task importance
-    function toggleTaskImportant(e) {
-        const taskId = parseInt(e.target.closest('button').dataset.id);
-        const taskIndex = tasks.findIndex(task => task.id === taskId);
-        
-        if (taskIndex !== -1) {
-            tasks[taskIndex].important = !tasks[taskIndex].important;
-            renderTasks();
-            saveTasks();
-        }
-    }
-    
-    // Edit task
-    function editTask(e) {
-        const taskId = parseInt(e.target.closest('button').dataset.id);
-        const task = tasks.find(task => task.id === taskId);
-        
+    // Toggle task complete status
+    function toggleTaskComplete(taskId) {
+        const task = tasks.find(t => t.id === taskId);
         if (task) {
-            // Fill the form with task data
-            document.getElementById('task-title').value = task.title;
-            document.getElementById('task-description').value = task.description || '';
-            document.getElementById('task-due-date').value = task.dueDate ? task.dueDate.slice(0, 16) : '';
-            document.getElementById('task-priority').value = task.priority;
-            document.getElementById('task-project').value = task.project;
-            document.getElementById('task-important').checked = task.important;
-            document.getElementById('task-reminder').checked = task.reminderSet;
+            task.completed = !task.completed;
             
-            // Change form to edit mode
-            taskForm.dataset.mode = 'edit';
-            taskForm.dataset.id = taskId;
+            // Get current active section
+            const activeSection = document.querySelector('.main-nav li.active a').textContent.trim();
             
-            // Show modal
-            openModal(taskModal);
+            // Re-filter tasks based on current section
+            filterTasksBySection(activeSection);
+            
+            // Save to localStorage
+            saveToLocalStorage('tasks', tasks);
         }
     }
     
-    // Delete task
-    function deleteTask(e) {
-        if (confirm('Are you sure you want to delete this task?')) {
-            const taskId = parseInt(e.target.closest('button').dataset.id);
-            tasks = tasks.filter(task => task.id !== taskId);
-            renderTasks();
-            updateTaskStats();
-            saveTasks();
+    // Toggle task important status
+    function toggleTaskImportant(taskId) {
+        const task = tasks.find(t => t.id === taskId);
+        if (task) {
+            task.important = !task.important;
+            
+            // Get current active section
+            const activeSection = document.querySelector('.main-nav li.active a').textContent.trim();
+            
+            // Re-filter tasks based on current section
+            filterTasksBySection(activeSection);
+            
+            // Save to localStorage
+            saveToLocalStorage('tasks', tasks);
         }
     }
     
-    // Handle task form submission
-    taskForm.addEventListener('submit', function(e) {
+    // Handle task search
+    function handleSearch(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredTasks = tasks.filter(task =>
+            task.title.toLowerCase().includes(searchTerm) ||
+            task.description.toLowerCase().includes(searchTerm)
+        );
+        renderTasks(filteredTasks);
+    }
+    
+    // Handle new task submission
+    function handleTaskSubmit(e) {
         e.preventDefault();
         
-        const title = document.getElementById('task-title').value.trim();
-        const description = document.getElementById('task-description').value.trim();
-        const dueDate = document.getElementById('task-due-date').value;
-        const priority = document.getElementById('task-priority').value;
-        const project = document.getElementById('task-project').value;
-        const important = document.getElementById('task-important').checked;
-        const reminderSet = document.getElementById('task-reminder').checked;
+        const listId = document.getElementById('task-project').value;
+        const list = lists.find(l => l.id === listId);
         
-        if (taskForm.dataset.mode === 'edit') {
-            // Update existing task
-            const taskId = parseInt(taskForm.dataset.id);
-            const taskIndex = tasks.findIndex(task => task.id === taskId);
-            
-            if (taskIndex !== -1) {
-                tasks[taskIndex] = {
-                    ...tasks[taskIndex],
-                    title,
-                    description,
-                    dueDate: dueDate || null,
-                    priority,
-                    project,
-                    important,
-                    reminderSet
-                };
-            }
-        } else {
-            // Add new task
-            const newTask = {
-                id: Date.now(), // Simple ID generation
-                title,
-                description,
-                dueDate: dueDate || null,
-                priority,
-                project,
-                important,
-                completed: false,
-                reminderSet
-            };
-            
-            tasks.push(newTask);
-        }
+        const newTask = {
+            id: tasks.length > 0 ? Math.max(...tasks.map(t => t.id)) + 1 : 1,
+            title: document.getElementById('task-title').value,
+            description: document.getElementById('task-description').value,
+            dueDate: document.getElementById('task-due-date').value,
+            priority: document.getElementById('task-priority').value,
+            list: listId,
+            tag: list.name,
+            completed: false,
+            important: false
+        };
         
-        // Reset form and close modal
-        taskForm.reset();
-        taskForm.removeAttribute('data-mode');
-        taskForm.removeAttribute('data-id');
-        closeModal(taskModal);
-        
-        // Update UI
+        tasks.unshift(newTask);
         renderTasks();
-        updateTaskStats();
-        saveTasks();
-    });
-    
-    // Handle project form submission
-    projectForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        const name = document.getElementById('project-name').value.trim();
-        const color = document.getElementById('project-color').value;
-        
-        // In a real app, this would save to the database
-        alert(`Project "${name}" created with color ${color}`);
-        
-        // Reset form and close modal
-        projectForm.reset();
-        closeModal(projectModal);
-    });
-    
-    // Open modal
-    function openModal(modal) {
-        modal.style.display = 'flex';
+        closeModal(taskModal);
+        taskForm.reset();
     }
     
-    // Close modal
+    // Update header based on selected section
+    function updateHeader(section) {
+        const pageTitle = document.querySelector('.page-title');
+        if (section === 'Today') {
+            const today = new Date();
+            const options = { weekday: 'long', month: 'long', day: 'numeric' };
+            pageTitle.textContent = today.toLocaleDateString('en-US', options);
+        } else {
+            pageTitle.textContent = section;
+        }
+    }
+    
+    // Filter tasks based on selected section
+    function filterTasksBySection(section, listId = null) {
+        let filteredTasks;
+        
+        switch(section) {
+            case 'Completed':
+                filteredTasks = tasks.filter(task => task.completed);
+                break;
+            case 'Today':
+                const today = new Date().toDateString();
+                filteredTasks = tasks.filter(task => {
+                    const taskDate = new Date(task.dueDate).toDateString();
+                    return taskDate === today;
+                });
+                break;
+            case 'Important':
+                filteredTasks = tasks.filter(task => task.important);
+                break;
+            case 'list':
+                filteredTasks = tasks.filter(task => task.list === listId);
+                break;
+            default: // Inbox and other sections
+                filteredTasks = tasks;
+        }
+        
+        renderTasks(filteredTasks);
+    }
+    
+    // Utility functions
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        const today = new Date();
+        const isToday = date.toDateString() === today.toDateString();
+        
+        return isToday
+            ? `Today at ${date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false })}`
+            : date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+    
+    function formatDateLong(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    }
+    
+    function capitalizeFirst(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+    
+    // LocalStorage functions
+    function saveToLocalStorage(key, data) {
+        localStorage.setItem(key, JSON.stringify(data));
+    }
+    
+    function loadFromLocalStorage(key) {
+        const data = localStorage.getItem(key);
+        return data ? JSON.parse(data) : null;
+    }
+    
+    // Modal functions
+    function openModal(modal) {
+        modal.style.display = 'block';
+    }
+    
     function closeModal(modal) {
         modal.style.display = 'none';
+        // Reset form if exists
+        const form = modal.querySelector('form');
+        if (form) form.reset();
     }
     
-    // Save tasks to localStorage (in a real app, this would save to a database)
-    function saveTasks() {
-        localStorage.setItem('tasks', JSON.stringify(tasks));
-    }
-    
-    // Load tasks from localStorage (in a real app, this would fetch from a database)
-    function loadTasks() {
-        const savedTasks = localStorage.getItem('tasks');
-        if (savedTasks) {
-            tasks = JSON.parse(savedTasks);
-        }
-    }
-    
-    // Event listeners
-    addTaskBtn.addEventListener('click', function() {
-        taskForm.reset();
-        taskForm.removeAttribute('data-mode');
-        taskForm.removeAttribute('data-id');
-        openModal(taskModal);
-    });
-    
-    addProjectBtn.addEventListener('click', function() {
-        projectForm.reset();
-        openModal(projectModal);
-    });
-    
-    notificationsBtn.addEventListener('click', function() {
-        openModal(notificationModal);
-        // Clear notifications badge
-        document.querySelector('.notification-badge').style.display = 'none';
-    });
-    
-    closeModalBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const modal = this.closest('.modal');
-            closeModal(modal);
-        });
-    });
-    
-    window.addEventListener('click', function(e) {
-        if (e.target.classList.contains('modal')) {
-            closeModal(e.target);
-        }
-    });
-    
-    taskSearch.addEventListener('input', renderTasks);
-    
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            currentFilter = this.dataset.filter;
-            renderTasks();
-        });
-    });
-    
-    logoutBtn.addEventListener('click', function() {
-        // In a real app, this would also call the server to invalidate the token
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
-        window.location.href = 'auth/login.html';
-    });
-    
-    // Check if user is authenticated on page load
-    if (window.location.pathname.endsWith('index.html') || 
-        window.location.pathname.endsWith('/')) {
-        init();
-    }
+    // Initialize the app
+    init();
 });

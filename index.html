@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Productivity Pro | Task Management</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>Nimbus Todo | Task Management</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="logo">
-                <i class="fas fa-rocket"></i>
-                <h1>Productivity Pro</h1>
+                <i class="fas fa-cloud"></i>
+                <h1>Nimbus Todo</h1>
             </div>
             
             <div class="user-profile">
-                <img src="assets/images/user-avatar.jpg" alt="User Avatar" id="user-avatar">
+                <img src="https://ui-avatars.com/api/?name=John+Doe&background=6366f1&color=fff" alt="User Avatar" id="user-avatar">
                 <div>
                     <h3 id="username-display">John Doe</h3>
                     <p id="user-email">john@example.com</p>
@@ -26,9 +27,8 @@
             
             <nav class="main-nav">
                 <ul>
-                    <li class="active"><a href="#"><i class="fas fa-tasks"></i> My Tasks</a></li>
+                    <li class="active"><a href="#"><i class="fas fa-inbox"></i> Inbox</a></li>
                     <li><a href="#"><i class="fas fa-calendar-day"></i> Today</a></li>
-                    <li><a href="#"><i class="fas fa-calendar-week"></i> Upcoming</a></li>
                     <li><a href="#"><i class="fas fa-star"></i> Important</a></li>
                     <li><a href="#"><i class="fas fa-check-circle"></i> Completed</a></li>
                 </ul>
@@ -36,88 +36,111 @@
             
             <div class="projects-section">
                 <div class="projects-header">
-                    <h3>Projects</h3>
-                    <button id="add-project"><i class="fas fa-plus"></i></button>
+                    <h3>Lists</h3>
+                    <button id="add-project" class="icon-btn"><i class="fas fa-plus"></i></button>
                 </div>
                 <ul id="projects-list">
-                    <li><a href="#"><i class="fas fa-briefcase"></i> Work</a></li>
-                    <li><a href="#"><i class="fas fa-home"></i> Personal</a></li>
+                    <li><a href="#"><i class="fas fa-circle" style="color: #6366f1;"></i> Personal</a></li>
+                    <li><a href="#"><i class="fas fa-circle" style="color: #22c55e;"></i> Work</a></li>
+                    <li><a href="#"><i class="fas fa-circle" style="color: #f59e0b;"></i> Shopping</a></li>
                 </ul>
-            </div>
-            
-            <div class="sidebar-footer">
-                <button id="settings-btn"><i class="fas fa-cog"></i> Settings</button>
-                <button id="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
         </aside>
         
         <!-- Main Content -->
         <main class="main-content">
             <header class="main-header">
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search tasks..." id="task-search">
-                </div>
+                <h1 class="page-title">Today, April 22</h1>
                 <div class="header-actions">
-                    <button id="add-task-btn" class="primary-btn">
-                        <i class="fas fa-plus"></i> Add Task
-                    </button>
-                    <div class="notifications">
-                        <i class="fas fa-bell"></i>
-                        <span class="notification-badge">3</span>
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search tasks..." id="task-search">
                     </div>
+                    <button id="add-task-btn" class="primary-btn">
+                        <i class="fas fa-plus"></i> New Task
+                    </button>
                 </div>
             </header>
             
-            <div class="content-header">
-                <h2>My Tasks</h2>
-                <div class="task-filters">
-                    <button class="filter-btn active" data-filter="all">All</button>
-                    <button class="filter-btn" data-filter="today">Today</button>
-                    <button class="filter-btn" data-filter="important">Important</button>
-                    <button class="filter-btn" data-filter="completed">Completed</button>
-                </div>
-            </div>
-            
             <div class="tasks-container">
                 <div class="task-list-header">
-                    <span>Task Name</span>
+                    <span>Task</span>
                     <span>Due Date</span>
                     <span>Priority</span>
-                    <span>Actions</span>
+                    <span>Status</span>
                 </div>
                 
-                <ul class="task-list" id="task-list">
-                    <!-- Tasks will be dynamically added here -->
-                </ul>
-            </div>
-            
-            <!-- Task Statistics -->
-            <div class="stats-container">
-                <div class="stat-card">
-                    <h3>Total Tasks</h3>
-                    <p id="total-tasks">0</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Completed</h3>
-                    <p id="completed-tasks">0</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Pending</h3>
-                    <p id="pending-tasks">0</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Overdue</h3>
-                    <p id="overdue-tasks">0</p>
+                <div class="task-list" id="task-list">
+                    <div class="task-item">
+                        <div class="task-title">Code Review</div>
+                        <div class="task-date">Today at 14:00</div>
+                        <div class="task-priority priority-high">High</div>
+                        <div class="task-status">
+                            <input type="checkbox" class="task-checkbox">
+                            <span class="task-tag">Dev</span>
+                        </div>
+                    </div>
+                    
+                    <div class="task-item">
+                        <div class="task-title">Meetings with Ragazo Company</div>
+                        <div class="task-date">Today at 12:00</div>
+                        <div class="task-priority priority-medium">Medium</div>
+                        <div class="task-status">
+                            <input type="checkbox" class="task-checkbox">
+                            <span class="task-tag">Meeting</span>
+                        </div>
+                    </div>
+                    
+                    <div class="task-item selected">
+                        <div class="task-title">Documenting on Github</div>
+                        <div class="task-date">Today at 09:30</div>
+                        <div class="task-priority priority-low">Low</div>
+                        <div class="task-status">
+                            <input type="checkbox" class="task-checkbox">
+                            <span class="task-tag">Dev</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
         
+        <!-- Task Details Panel -->
+        <aside class="task-details open">
+            <div class="task-details-header">
+                <div>
+                    <h2 class="task-details-title">Documenting on Github</h2>
+                    <span class="task-tag">Dev</span>
+                </div>
+                <button class="close-details">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="task-details-content">
+                <div class="task-detail-section">
+                    <span class="detail-label">Description</span>
+                    <p class="task-description">Create a documentation for Github project that we have created a project with successfully, push it on them.</p>
+                </div>
+                
+                <div class="task-detail-section">
+                    <span class="detail-label">Due Date</span>
+                    <p class="detail-value">April 22, 2024 at 09:30</p>
+                </div>
+                
+                <div class="task-detail-section">
+                    <span class="detail-label">Priority</span>
+                    <div class="task-priority priority-low">Low</div>
+                </div>
+            </div>
+        </aside>
+        
         <!-- Add Task Modal -->
         <div class="modal" id="task-modal">
             <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2>Add New Task</h2>
+                <div class="modal-header">
+                    <h2>New Task</h2>
+                    <button class="close-modal"><i class="fas fa-times"></i></button>
+                </div>
                 <form id="task-form">
                     <div class="form-group">
                         <label for="task-title">Task Title</label>
@@ -136,67 +159,50 @@
                             <label for="task-priority">Priority</label>
                             <select id="task-priority">
                                 <option value="low">Low</option>
-                                <option value="medium" selected>Medium</option>
+                                <option value="medium">Medium</option>
                                 <option value="high">High</option>
                             </select>
                         </div>
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="task-project">Project</label>
-                            <select id="task-project">
-                                <option value="personal">Personal</option>
-                                <option value="work">Work</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>
-                                <input type="checkbox" id="task-important"> Mark as Important
-                            </label>
-                        </div>
-                    </div>
                     <div class="form-group">
-                        <label>
-                            <input type="checkbox" id="task-reminder"> Set Reminder
-                        </label>
+                        <label for="task-project">List</label>
+                        <select id="task-project">
+                            <option value="personal">Personal</option>
+                            <option value="work">Work</option>
+                            <option value="shopping">Shopping</option>
+                        </select>
                     </div>
-                    <button type="submit" class="primary-btn">Save Task</button>
+                    <div class="form-actions">
+                        <button type="submit" class="primary-btn">Create Task</button>
+                    </div>
                 </form>
-            </div>
-        </div>
-        
-        <!-- Add Project Modal -->
-        <div class="modal" id="project-modal">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2>Add New Project</h2>
-                <form id="project-form">
-                    <div class="form-group">
-                        <label for="project-name">Project Name</label>
-                        <input type="text" id="project-name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="project-color">Color</label>
-                        <input type="color" id="project-color" value="#4e73df">
-                    </div>
-                    <button type="submit" class="primary-btn">Create Project</button>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Notification Modal -->
-        <div class="modal" id="notification-modal">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <h2>Notifications</h2>
-                <ul class="notification-list" id="notification-list">
-                    <!-- Notifications will be added here -->
-                </ul>
             </div>
         </div>
     </div>
     
-    <script src="js/app.js"></script>
-    <script src="js/azure.js"></script>
+    <!-- Add Project Modal -->
+    <div class="modal" id="project-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New List</h2>
+                <button class="close-modal"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="project-form">
+                <div class="form-group">
+                    <label for="project-name">List Name</label>
+                    <input type="text" id="project-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="project-color">Color</label>
+                    <input type="color" id="project-color" value="#6366f1">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="primary-btn">Create List</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
 </body>
 </html>
