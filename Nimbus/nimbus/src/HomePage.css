@@ -1,0 +1,41 @@
+@font-face {
+    font-family: 'Megamax';
+    src: url('./fonts/MegamaxJonathanToo-YqOq2.ttf');
+}
+
+.entry-logo-intro h2 {
+    font-family: 'Megamax';
+    text-align: center;
+    font-size: 30px;
+}
+
+.entry-page-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(210deg, #b2c1cd, #5782ac, #2f61df);
+    padding: 20px;
+}
+
+/* logo */
+.entry-logo-container {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.homepage-logo {
+    width: 400px;
+    height: auto;
+    margin: auto;
+}
+
+.start-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
