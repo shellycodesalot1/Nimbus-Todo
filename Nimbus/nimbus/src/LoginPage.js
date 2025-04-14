@@ -1,32 +1,66 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./LoginPage.css";
+import "./LoginPage.css"; 
 
-function EntryPage() {
-    const Navigate = useNavigate();
+function Login() {
+    const navigate = useNavigate();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
 
-    const handleEnter = () => {
-        Navigate("/login");
+    const handleLogin = (e) => {
+        e.preventDefault();
+
+        // Simple validation
+        if (!email || !password) {
+            setError('Email and password are required');
+            return;
+        }
+
+        // TODO: Add actual login logic with Azure AD B2C here
+        console.log('Logging in with:', email);
+        
+        // For now, navigate to dashboard after successful login
+        navigate("/dashboard");
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-left">
-                <div className="auth-left-content">
-                    <h1> Welcome Back! </h1>
-                    <p>Log in to your Productivity Pro account to manage your tasks, set reminders, and boost your productivity.</p>
-                    <img src="../assets/images/login-illustration.svg" alt="Login Illustration" style="max-width: 300px;" />
-                </div>
-            </div>
-            
-            <div className="auth-right">
-                <div className="auth-form-container">
-                    <div className="auth-logo">
-                        <i className="fas fa-rocket"></i>
-                        <h2>Productivity Pro</h2>
+        <div className="login-page-wrapper">
+            <div className="login-container">
+                <div className="gif-section">
+                    <div className="logo-container">
+                        <div className="logo">
+                            <h1>Nimbus To-Do</h1>
+                        </div>
                     </div>
+                </div>
+                <div className="sign-in-box">
+                    <h1>Login</h1>
+                    <form onSubmit={handleLogin}>
+                        {error && <div className="error-message">{error}</div>}
+                        <input 
+                            type="email" 
+                            placeholder="Email" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                        <input 
+                            type="password" 
+                            placeholder="Password" 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        <button type="submit">Login</button>
+                    </form>
+                    <p className="login-link">
+                        Don't have an account? <a href="/signup">Sign Up</a>
+                    </p>
                 </div>
             </div>
         </div>
-    )
-} 
+    );
+}
+
+export default Login;

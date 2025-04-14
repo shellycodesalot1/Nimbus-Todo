@@ -34,8 +34,23 @@
 }
 
 .start-button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
+    margin: 12px 0;
+    padding: 12px ;
+    width: 100%;
+    transition: background-color 0.3s ease-in-out;
+    background: #CC0000;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+    width: 15%;
+    margin-top: 20px;
+}
+
+/* button hover */
+.start-button button:hover {
+    background-color: #83131e;
 }
