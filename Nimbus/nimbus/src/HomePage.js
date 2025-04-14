@@ -6,7 +6,7 @@ function HomePage() {
   const navigate = useNavigate();
 
   const handleEnter = () => {
-    navigate("/signup");
+    navigate("/login");
   };
 
     return (
