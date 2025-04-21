@@ -27,7 +27,7 @@ export const msalConfig = {
         storeAuthStateInCookie: false
     },
     system: {
-        allowNativeBroker: false, 
+        allowNativeBroker: false,
         loggerOptions: {
             loggerCallback: (level, message, containsPii) => {
                 if (containsPii) {
@@ -72,25 +72,38 @@ export const loginRequest = {
     scopes: [
         "openid",
         "profile",
+        "email",
         "offline_access"
     ]
 };
 
-// Initialize MSAL instance
+// Create MSAL instance
 const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-// Initialize MSAL
-msalInstance.initialize().catch(error => {
-    console.error("Failed to initialize MSAL:", error);
+// Initialize MSAL as a Promise
+const initializeMsal = async () => {
+    if (!msalInstance.initialized) {
+        try {
+            await msalInstance.initialize();
+            console.log('MSAL initialized successfully');
+        } catch (error) {
+            console.error('Failed to initialize MSAL:', error);
+            throw error;
+        }
+    }
+    return msalInstance;
+};
+
+// Initialize immediately
+initializeMsal().catch(error => {
+    console.error("Failed to initialize MSAL on load:", error);
 });
 
 // Function to handle Microsoft login
 export async function handleMicrosoftLogin() {
     try {
         // Ensure MSAL is initialized
-        if (!msalInstance.initialized) {
-            await msalInstance.initialize();
-        }
+        const instance = await initializeMsal();
         
         // Clear any existing errors in sessionStorage
         sessionStorage.removeItem('msal.error');
@@ -98,7 +111,7 @@ export async function handleMicrosoftLogin() {
         
         console.log('Attempting login with config:', msalConfig);
         
-        const authResult = await msalInstance.loginPopup({
+        const authResult = await instance.loginPopup({
             ...loginRequest,
             prompt: "select_account"
         });
@@ -108,6 +121,9 @@ export async function handleMicrosoftLogin() {
         const userInfo = {
             name: authResult.account.name,
             username: authResult.account.username,
+            email: authResult.account.idTokenClaims.emails?.[0],
+            givenName: authResult.account.idTokenClaims.given_name,
+            identityProvider: authResult.account.idTokenClaims.idp
         };
         
         return userInfo;
@@ -130,4 +146,7 @@ export async function handleMicrosoftLogin() {
         
         throw error;
     }
-} 
+}
+
+// Export the MSAL instance for use in other files
+export { msalInstance }; 

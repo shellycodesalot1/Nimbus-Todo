@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { msalInstance } from '../auth';
 import { InteractionRequiredAuthError } from '@azure/msal-browser';
+import { loginRequest } from '../azure';
 
 const AuthContext = createContext(null);
 
@@ -21,7 +22,8 @@ export const AuthProvider = ({ children }) => {
                     const userData = {
                         name: currentAccount.name,
                         username: currentAccount.username,
-                        id: currentAccount.localAccountId
+                        id: currentAccount.localAccountId,
+                        email: currentAccount.username // email is typically the username in B2C
                     };
                     setUser(userData);
                 }
@@ -46,15 +48,14 @@ export const AuthProvider = ({ children }) => {
     const login = async () => {
         try {
             setError(null);
-            const response = await msalInstance.loginPopup({
-                scopes: ["openid", "profile", "offline_access"]
-            });
+            const response = await msalInstance.loginPopup(loginRequest);
 
             if (response) {
                 const userData = {
                     name: response.account.name,
                     username: response.account.username,
-                    id: response.account.localAccountId
+                    id: response.account.localAccountId,
+                    email: response.account.username
                 };
                 
                 // Set active account in MSAL
@@ -89,7 +90,7 @@ export const AuthProvider = ({ children }) => {
             }
 
             const request = {
-                scopes: ["openid", "profile", "offline_access"],
+                ...loginRequest,
                 account: account
             };
 

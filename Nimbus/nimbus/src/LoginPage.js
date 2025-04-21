@@ -8,6 +8,8 @@ function LoginPage() {
     const location = useLocation();
     const { login, user, error: authError } = useAuth();
     const [error, setError] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
     useEffect(() => {
         if (user) {
@@ -21,10 +23,13 @@ function LoginPage() {
         }
     }, [authError]);
 
-    const handleLogin = async (e) => {
+    const handleEmailLogin = async (e) => {
         e.preventDefault();
+        setError('Email/Password login');
+    };
+
+    const handleMicrosoftLogin = async () => {
         setError('');
-        
         try {
             await login();
             const from = location.state?.from?.pathname || "/dashboard";
@@ -54,13 +59,30 @@ function LoginPage() {
                         </div>
                     )}
 
+                    <form onSubmit={handleEmailLogin}>
+                        <input
+                            type="email"
+                            placeholder="Email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                        <input
+                            type="password"
+                            placeholder="Password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <button type="submit">Sign In</button>
+                    </form>
+
                     <div className="social-auth">
+                        <p>Or sign in with</p>
                         <button 
                             type="button" 
                             className="microsoft-btn"
-                            onClick={handleLogin}
+                            onClick={handleMicrosoftLogin}
                         >
-                            <i className="fab fa-microsoft"></i> Sign in with Microsoft
+                            <i className="fab fa-microsoft"></i> Microsoft
                         </button>
                     </div>
 

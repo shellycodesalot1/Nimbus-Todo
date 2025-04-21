@@ -1,13 +1,5 @@
 import { PublicClientApplication, InteractionRequiredAuthError } from '@azure/msal-browser';
-import { msalConfig } from './azure';
-
-// Create MSAL instance
-export const msalInstance = new PublicClientApplication(msalConfig);
-
-// Login request object
-const loginRequest = {
-    scopes: ["openid", "profile", "offline_access"],
-};
+import { msalConfig, msalInstance, loginRequest } from './azure';
 
 // Function to handle login
 export const login = async () => {
@@ -43,7 +35,7 @@ export const getToken = async () => {
     }
 
     const request = {
-        scopes: ["openid", "profile", "offline_access"],
+        ...loginRequest,
         account: account
     };
 
