@@ -1,35 +1,125 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { msalInstance } from '../auth';
+import { InteractionRequiredAuthError } from '@azure/msal-browser';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
+    // Initialize auth state
     useEffect(() => {
-        // Check if user is already logged in
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-        setLoading(false);
+        const initializeAuth = async () => {
+            try {
+                // Check if there's an active account in MSAL
+                const currentAccount = msalInstance.getActiveAccount();
+                
+                if (currentAccount) {
+                    // Get user info from account
+                    const userData = {
+                        name: currentAccount.name,
+                        username: currentAccount.username,
+                        id: currentAccount.localAccountId
+                    };
+                    setUser(userData);
+                }
+            } catch (err) {
+                console.error('Auth initialization error:', err);
+                setError(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        initializeAuth();
+
+        // Cleanup function
+        return () => {
+            // Reset state on unmount
+            setUser(null);
+            setError(null);
+        };
     }, []);
 
-    const login = (userData) => {
-        setUser(userData);
-        localStorage.setItem('user', JSON.stringify(userData));
+    const login = async () => {
+        try {
+            setError(null);
+            const response = await msalInstance.loginPopup({
+                scopes: ["openid", "profile", "offline_access"]
+            });
+
+            if (response) {
+                const userData = {
+                    name: response.account.name,
+                    username: response.account.username,
+                    id: response.account.localAccountId
+                };
+                
+                // Set active account in MSAL
+                msalInstance.setActiveAccount(response.account);
+                setUser(userData);
+                return userData;
+            }
+        } catch (err) {
+            console.error('Login error:', err);
+            setError(err);
+            throw err;
+        }
     };
 
-    const logout = () => {
-        setUser(null);
-        localStorage.removeItem('user');
+    const logout = async () => {
+        try {
+            await msalInstance.logout();
+            setUser(null);
+            setError(null);
+        } catch (err) {
+            console.error('Logout error:', err);
+            setError(err);
+            throw err;
+        }
+    };
+
+    const getToken = async () => {
+        try {
+            const account = msalInstance.getActiveAccount();
+            if (!account) {
+                throw new Error('No active account! Please login first.');
+            }
+
+            const request = {
+                scopes: ["openid", "profile", "offline_access"],
+                account: account
+            };
+
+            // Try to get token silently first
+            try {
+                const response = await msalInstance.acquireTokenSilent(request);
+                return response.accessToken;
+            } catch (err) {
+                if (err instanceof InteractionRequiredAuthError) {
+                    // If silent token acquisition fails, try popup
+                    const response = await msalInstance.acquireTokenPopup(request);
+                    return response.accessToken;
+                }
+                throw err;
+            }
+        } catch (err) {
+            console.error('Token acquisition error:', err);
+            setError(err);
+            throw err;
+        }
     };
 
     const value = {
         user,
         loading,
+        error,
         login,
-        logout
+        logout,
+        getToken,
+        isAuthenticated: !!user
     };
 
     return (
