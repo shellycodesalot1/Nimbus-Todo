@@ -46,6 +46,9 @@ export const msalConfig = {
                     case msal.LogLevel.Warning:
                         console.warn(message);
                         return;
+                    default:
+                        console.log(message);
+                        return;
                 }
             },
             piiLoggingEnabled: false
