@@ -12,22 +12,42 @@ const b2cConfig = {
 const authorityBase = `https://${b2cConfig.tenantName}.${b2cConfig.authorityDomain}`;
 const signUpSignInAuthority = `${authorityBase}/${b2cConfig.tenantName}.onmicrosoft.com/${b2cConfig.signUpSignInPolicy}`;
 
+// Define redirect URIs exactly as registered in B2C
+const redirectUris = {
+    development: {
+        loginRedirectUri: 'http://localhost:3000',
+        logoutRedirectUri: 'http://localhost:3000'
+    },
+    production: {
+        loginRedirectUri: 'https://ashy-grass-0bd7dc61e.azurestaticapps.net',
+        logoutRedirectUri: 'https://ashy-grass-0bd7dc61e.azurestaticapps.net'
+    }
+};
+
+// Get the current environment's URIs
+const isDevelopment = process.env.NODE_ENV === 'development';
+const currentUris = isDevelopment ? redirectUris.development : redirectUris.production;
+
 // Microsoft Azure B2C configuration
 export const msalConfig = {
     auth: {
         clientId: b2cConfig.clientId,
         authority: signUpSignInAuthority,
         knownAuthorities: [`${b2cConfig.tenantName}.${b2cConfig.authorityDomain}`],
-        redirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net/dashboard",
+        redirectUri: currentUris.loginRedirectUri,
+        navigateToLoginRequestUrl: true,
         validateAuthority: false,
-        postLogoutRedirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net"
+        postLogoutRedirectUri: currentUris.logoutRedirectUri
     },
     cache: {
         cacheLocation: "sessionStorage",
-        storeAuthStateInCookie: false
+        storeAuthStateInCookie: true
     },
     system: {
-        allowNativeBroker: false, 
+        allowNativeBroker: false,
+        windowHashTimeout: 60000,
+        iframeHashTimeout: 6000,
+        loadFrameTimeout: 0,
         loggerOptions: {
             loggerCallback: (level, message, containsPii) => {
                 if (containsPii) {
@@ -52,19 +72,18 @@ export const msalConfig = {
                 }
             },
             piiLoggingEnabled: false
-        },
-        windowHashTimeout: 60000,
-        iframeHashTimeout: 6000,
-        loadFrameTimeout: 0,
+        }
     }
 };
 
 // Debug logging
+console.log('Environment:', process.env.NODE_ENV);
 console.log('B2C Authority:', signUpSignInAuthority);
 console.log('MSAL Config:', {
     clientId: msalConfig.auth.clientId,
     authority: msalConfig.auth.authority,
     redirectUri: msalConfig.auth.redirectUri,
+    postLogoutRedirectUri: msalConfig.auth.postLogoutRedirectUri,
     knownAuthorities: msalConfig.auth.knownAuthorities
 });
 
@@ -74,60 +93,4 @@ export const loginRequest = {
         "profile",
         "offline_access"
     ]
-};
-
-// Initialize MSAL instance
-const msalInstance = new msal.PublicClientApplication(msalConfig);
-
-// Initialize MSAL
-msalInstance.initialize().catch(error => {
-    console.error("Failed to initialize MSAL:", error);
-});
-
-// Function to handle Microsoft login
-export async function handleMicrosoftLogin() {
-    try {
-        // Ensure MSAL is initialized
-        if (!msalInstance.initialized) {
-            await msalInstance.initialize();
-        }
-        
-        // Clear any existing errors in sessionStorage
-        sessionStorage.removeItem('msal.error');
-        sessionStorage.removeItem('msal.interaction.error');
-        
-        console.log('Attempting login with config:', msalConfig);
-        
-        const authResult = await msalInstance.loginPopup({
-            ...loginRequest,
-            prompt: "select_account"
-        });
-        console.log("Login successful", authResult);
-        
-        // Get user info from claims
-        const userInfo = {
-            name: authResult.account.name,
-            username: authResult.account.username,
-        };
-        
-        return userInfo;
-        
-    } catch (error) {
-        console.error("Login failed", error);
-        console.error("Error details:", {
-            name: error.name,
-            message: error.message,
-            errorCode: error.errorCode,
-            stack: error.stack
-        });
-
-        // Check for specific error types
-        if (error.errorCode === 'user_cancelled') {
-            throw new Error('Login was cancelled by the user');
-        } else if (error.errorCode === 'popup_window_error') {
-            throw new Error('Failed to open login popup. Please allow popups for this site.');
-        }
-        
-        throw error;
-    }
-} 
+}; 

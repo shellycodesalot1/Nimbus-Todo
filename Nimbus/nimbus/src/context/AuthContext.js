@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { msalInstance } from '../auth';
+import { msalInstance, login as msalLogin, logout as msalLogout, getToken as msalGetToken } from '../auth';
 import { InteractionRequiredAuthError } from '@azure/msal-browser';
 
 const AuthContext = createContext(null);
@@ -46,9 +46,7 @@ export const AuthProvider = ({ children }) => {
     const login = async () => {
         try {
             setError(null);
-            const response = await msalInstance.loginPopup({
-                scopes: ["openid", "profile", "offline_access"]
-            });
+            const response = await msalLogin();
 
             if (response) {
                 const userData = {
@@ -57,9 +55,11 @@ export const AuthProvider = ({ children }) => {
                     id: response.account.localAccountId
                 };
                 
-                // Set active account in MSAL
-                msalInstance.setActiveAccount(response.account);
                 setUser(userData);
+
+                // After successful login, navigate to dashboard
+                window.location.href = '/dashboard';
+                
                 return userData;
             }
         } catch (err) {
@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await msalInstance.logout();
+            await msalLogout();
             setUser(null);
             setError(null);
         } catch (err) {
@@ -83,28 +83,7 @@ export const AuthProvider = ({ children }) => {
 
     const getToken = async () => {
         try {
-            const account = msalInstance.getActiveAccount();
-            if (!account) {
-                throw new Error('No active account! Please login first.');
-            }
-
-            const request = {
-                scopes: ["openid", "profile", "offline_access"],
-                account: account
-            };
-
-            // Try to get token silently first
-            try {
-                const response = await msalInstance.acquireTokenSilent(request);
-                return response.accessToken;
-            } catch (err) {
-                if (err instanceof InteractionRequiredAuthError) {
-                    // If silent token acquisition fails, try popup
-                    const response = await msalInstance.acquireTokenPopup(request);
-                    return response.accessToken;
-                }
-                throw err;
-            }
+            return await msalGetToken();
         } catch (err) {
             console.error('Token acquisition error:', err);
             setError(err);
