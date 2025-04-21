@@ -2,9 +2,9 @@ import * as msal from '@azure/msal-browser';
 
 // B2C Configuration
 const b2cConfig = {
-    tenantName: "nimbustodo",
-    clientId: "1f2c4ec7-e44f-4142-94d5-2a3197002874",
-    signUpSignInPolicy: "B2C_1_signupsignin",
+    tenantName: "nimbustodo1",
+    clientId: "6438927f-5f93-41f7-80aa-d6516cd19114",
+    signUpSignInPolicy: "B2C_1_nimbussignup_signin",
     authorityDomain: "b2clogin.com"
 };
 
@@ -25,7 +25,7 @@ const msalConfig = {
     },
     cache: {
         cacheLocation: "localStorage",
-        storeAuthStateInCookie: false // Changed to false for SPA
+        storeAuthStateInCookie: false
     },
     system: {
         allowRedirectInIframe: true,
@@ -43,7 +43,11 @@ console.log('MSAL Config:', {
 });
 
 export const loginRequest = {
-    scopes: ["openid", "profile", "offline_access"]
+    scopes: [
+        "openid",
+        "profile",
+        "offline_access"
+    ]
 };
 
 // Initialize MSAL instance
