@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { msalInstance, login as msalLogin, logout as msalLogout, getToken as msalGetToken } from '../auth';
-import { InteractionRequiredAuthError } from '@azure/msal-browser';
 
 const AuthContext = createContext(null);
 
