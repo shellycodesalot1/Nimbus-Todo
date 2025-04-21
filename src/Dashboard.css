@@ -1,0 +1,119 @@
+.task-columns {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    padding: 1rem 0;
+  }
+  
+  .task-column {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+    transition: background-color 0.3s ease;
+    min-height: 500px;
+  }
+  
+  .task-column h2 {
+    text-align: center;
+    color: white;
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  
+  /* Column color coding */
+  .task-column:nth-child(1) {
+    background-color: #ffe6e6; /* To Do (red-ish) */
+  }
+  
+  .task-column:nth-child(1) h2 {
+    color: #c62828;
+  }
+  
+  .task-column:nth-child(2) {
+    background-color: #fff9e6; /* In Progress (yellow-ish) */
+  }
+  
+  .task-column:nth-child(2) h2 {
+    color: #f9a825;
+  }
+  
+  .task-column:nth-child(3) {
+    background-color: #e6f4ea; /* Done (green-ish) */
+  }
+  
+  .task-column:nth-child(3) h2 {
+    color: #2e7d32;
+  }
+  
+  .task-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .task-card p {
+    margin: 0.25rem 0;
+    color: #333;
+  }
+  
+  .task-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+  }
+  
+  .task-actions button {
+    background-color: #4a90e2;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background-color 0.2s ease;
+  }
+  
+  .task-actions button:hover {
+    background-color: #357bd1;
+  }
+  
+  .task-form {
+    display: flex;
+    gap: 0.75rem;
+    margin: 1rem 0 2rem;
+    align-items: center;
+  }
+  
+  .task-form input,
+  .task-form select {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  
+  .task-form button {
+    padding: 0.5rem 1rem;
+    background-color: #2c62d1;
+    color: white;
+    font-weight: 500;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .task-form button:hover {
+    background-color: #1a4cb3;
+  }
+  
