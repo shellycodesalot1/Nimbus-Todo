@@ -1,15 +1,22 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { handleMicrosoftLogin } from "./azure";
 import { useAuth } from "./context/AuthContext";
 import "./LoginPage.css"; 
 
 function Login() {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const location = useLocation();
+    const { login, user } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (user) {
+            navigate('/dashboard');
+        }
+    }, [user, navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -17,7 +24,8 @@ function Login() {
             const userInfo = await handleMicrosoftLogin();
             console.log('User logged in:', userInfo);
             await login(userInfo);
-            navigate("/dashboard");
+            const from = location.state?.from?.pathname || "/dashboard";
+            navigate(from, { replace: true });
         } catch (error) {
             setError('Login failed: ' + error.message);
         }
@@ -28,7 +36,8 @@ function Login() {
             const userInfo = await handleMicrosoftLogin();
             console.log('User logged in with Microsoft:', userInfo);
             await login(userInfo);
-            navigate("/dashboard");
+            const from = location.state?.from?.pathname || "/dashboard";
+            navigate(from, { replace: true });
         } catch (error) {
             setError('Microsoft login failed: ' + error.message);
         }
