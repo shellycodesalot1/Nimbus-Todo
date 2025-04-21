@@ -1,0 +1,148 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+@font-face {
+    font-family: 'Megamax';
+    src: url('./fonts/MegamaxJonathanToo-YqOq2.ttf');
+}
+
+.logo {
+    font-family: 'Megamax';
+    justify-content: center;
+    text-align: center;
+    font-size: 20px;
+}
+
+
+  
+/* background and font */
+body, html {
+    height: 100%;
+    background: linear-gradient(210deg, #0071CE, #171f31, #284aa1); 
+    font-family: 'Arial', sans-serif;
+}
+  
+  /* login page */
+.login-page-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;  
+}
+  
+/* login container */
+.login-container {
+    display: flex;
+    width: 60%; 
+    max-width: 1000px; 
+    height: 65%;
+    border-radius: 8px;
+    overflow: hidden; 
+    position: relative; 
+}
+  
+  /* gif */
+  .gif-section {
+    flex: 1.5;
+    position: relative;
+    margin-right: 0; 
+    border-radius: 10px 0 0 10px; 
+    overflow: hidden; 
+  }
+  
+  .login-gif {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px 0 0 10px; 
+  }
+  
+  /* login page logo */
+  .login-logo-container {
+    position: absolute;
+    top: 15%; 
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  /* logo size */
+  .login-logo {
+    width: 500px; 
+    max-width: 100%;
+  }
+  
+  /* sign in box */
+  .sign-in-box {
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.13); 
+    padding: 30px;
+    border-radius: 0 10px 10px 0; 
+    margin-left: 0; 
+    margin-top: 0; 
+    backdrop-filter: blur(100px); 
+  }
+  
+  /* text box styles */
+  .sign-in-box input {
+    margin: 12px 0;
+    padding: 12px;
+    width: 100%; 
+    border: 1px solid #ccc;
+    border-radius: 8px; 
+    font-size: 16px;
+  }
+  
+  /* sign in button */
+  .sign-in-box button {
+    margin: 12px 0;
+    padding: 12px ;
+    width: 100%;
+    background-color: #CC0000;
+    transition: background-color 0.3s ease-in-out;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+  }
+  
+  /* button hover */
+  .sign-in-box button:hover {
+    background-color: #83131e;
+  }
+  
+  /* text colors */
+  .sign-in-box h1, 
+  .sign-in-box h2, 
+  .sign-in-box h3, 
+  .sign-in-box p {
+    color: black;
+  }
+  
+  /* resizable design */
+  @media (max-width: 768px) {
+    .login-container {
+      flex-direction: column; 
+      width: 100%;
+      height: auto; 
+    }
+  
+    .gif-section, .sign-in-box {
+      flex: none; 
+      width: 100%;
+      margin: 0; 
+    }
+  
+    .sign-in-box {
+      margin-top: -4px; 
+    }
+}
+  
