@@ -13,7 +13,7 @@ const authorityBase = `https://${b2cConfig.tenantName}.${b2cConfig.authorityDoma
 const signUpSignInAuthority = `${authorityBase}/${b2cConfig.tenantName}.onmicrosoft.com/${b2cConfig.signUpSignInPolicy}`;
 
 // Microsoft Azure B2C configuration
-const msalConfig = {
+export const msalConfig = {
     auth: {
         clientId: b2cConfig.clientId,
         authority: signUpSignInAuthority,
