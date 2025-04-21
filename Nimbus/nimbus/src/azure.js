@@ -18,9 +18,9 @@ const msalConfig = {
         clientId: b2cConfig.clientId,
         authority: signUpSignInAuthority,
         knownAuthorities: [`${b2cConfig.tenantName}.${b2cConfig.authorityDomain}`],
-        redirectUri: window.location.origin + "/login",
+        redirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net/login",
         validateAuthority: false,
-        postLogoutRedirectUri: window.location.origin
+        postLogoutRedirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net"
     },
     cache: {
         cacheLocation: "localStorage",
