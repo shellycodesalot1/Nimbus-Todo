@@ -1,27 +1,37 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { handleMicrosoftLogin } from "./azure";
+import { useAuth } from "./context/AuthContext";
 import "./LoginPage.css"; 
 
 function Login() {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-
-        // Simple validation
-        if (!email || !password) {
-            setError('Email and password are required');
-            return;
+        try {
+            const userInfo = await handleMicrosoftLogin();
+            console.log('User logged in:', userInfo);
+            await login(userInfo);
+            navigate("/dashboard");
+        } catch (error) {
+            setError('Login failed: ' + error.message);
         }
+    };
 
-        // TODO: Add actual login logic with Azure AD B2C here
-        console.log('Logging in with:', email);
-        
-        // For now, navigate to dashboard after successful login
-        navigate("/dashboard");
+    const handleMicrosoftButton = async () => {
+        try {
+            const userInfo = await handleMicrosoftLogin();
+            console.log('User logged in with Microsoft:', userInfo);
+            await login(userInfo);
+            navigate("/dashboard");
+        } catch (error) {
+            setError('Microsoft login failed: ' + error.message);
+        }
     };
 
     return (
@@ -35,28 +45,32 @@ function Login() {
                     </div>
                 </div>
                 <div className="sign-in-box">
-                    <h1>Login</h1>
+                    <h1>Sign In</h1>
+                    {error && <div className="error-message">{error}</div>}
                     <form onSubmit={handleLogin}>
-                        {error && <div className="error-message">{error}</div>}
-                        <input 
-                            type="email" 
-                            placeholder="Email" 
+                        <input
+                            type="email"
+                            placeholder="Email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            required
                         />
-                        <input 
-                            type="password" 
-                            placeholder="Password" 
+                        <input
+                            type="password"
+                            placeholder="Password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            required
                         />
-                        <button type="submit">Login</button>
+                        <button type="submit">Sign In</button>
                     </form>
-                    <p className="login-link">
-                        Don't have an account? <a href="/signup">Sign Up</a>
-                    </p>
+                    <div className="social-auth">
+                        <p>Or sign in with</p>
+                        <button 
+                            className="microsoft-btn"
+                            onClick={handleMicrosoftButton}
+                        >
+                            <i className="fab fa-microsoft"></i> Microsoft
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
