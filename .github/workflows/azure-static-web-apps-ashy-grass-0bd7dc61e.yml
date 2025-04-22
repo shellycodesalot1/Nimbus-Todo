@@ -27,9 +27,9 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           ###### Repository/Build Configurations ######
-          app_location: "Nimbus/nimbus" # Location of your React app
-          api_location: "api" # Azure Functions API location
-          output_location: "build" # React build output directory
+          app_location: "src"            # React app base
+          api_location: "src/api"        # Azure Functions path
+          output_location: "build"       # React build output
           ###### End of Repository/Build Configurations ######
 
   close_pull_request_job:
