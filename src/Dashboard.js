@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { addTask, deleteTask, editTask } from './api/azureFunctions';
+import { addTask, deleteTask,} from './api/azureFunctions';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import './Dashboard.css';
 
@@ -91,7 +91,7 @@ const Dashboard = () => {
     try {
       // Convert frontend status to backend completed boolean
       const completed = newStatus === 'Done';
-      const updated = await editTask(taskId, { completed });
+      //const updated = await editTask(taskId, { completed });
       
       // Update local state
       setTasks(tasks.map((task) => 
