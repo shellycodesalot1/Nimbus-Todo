@@ -18,21 +18,22 @@ const msalConfig = {
     clientId: b2cConfig.clientId,
     authority,
     knownAuthorities: [`${b2cConfig.tenantName}.${b2cConfig.authorityDomain}`],
-    redirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
-    postLogoutRedirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
-    navigateToLoginRequestUrl: true
+    redirectUri: "http://localhost:3000/", // Change this to your URL
+    postLogoutRedirectUri: "http://localhost:3000/",
+
+    navigateToLoginRequestUrl: true,
   },
   cache: {
     cacheLocation: "localStorage",
-    storeAuthStateInCookie: false
+    storeAuthStateInCookie: false,
   },
   system: {
     allowRedirectInIframe: true,
     loggerOptions: {
       loggerCallback: (level, message) => console.log(`MSAL: ${message}`),
-      logLevel: msal.LogLevel.Warning
-    }
-  }
+      logLevel: msal.LogLevel.Warning,
+    },
+  },
 };
 
 // 🔑 Login Scopes
