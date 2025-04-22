@@ -1,6 +1,6 @@
 import * as msal from '@azure/msal-browser';
 
-// 🔐 B2C Config
+// 🔐 Azure B2C Config
 const b2cConfig = {
   tenantName: "nimbustodo1",
   clientId: "6438927f-5f93-41f7-80aa-d6516cd19114",
@@ -8,7 +8,7 @@ const b2cConfig = {
   authorityDomain: "b2clogin.com"
 };
 
-// 🧭 Authority URL
+// 🧭 Authority URLs
 const authorityBase = `https://${b2cConfig.tenantName}.${b2cConfig.authorityDomain}`;
 const authority = `${authorityBase}/${b2cConfig.tenantName}.onmicrosoft.com/${b2cConfig.signUpSignInPolicy}`;
 
@@ -17,13 +17,13 @@ const msalConfig = {
   auth: {
     clientId: b2cConfig.clientId,
     authority,
-    knownAuthorities: [`${b2cConfig.tenantName}.${b2cConfig.authorityDomain}`],
+    knownAuthorities: [authorityBase],
     redirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
     postLogoutRedirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
     navigateToLoginRequestUrl: true
   },
   cache: {
-    cacheLocation: "localStorage",
+    cacheLocation: "localStorage", // or "sessionStorage" if preferred
     storeAuthStateInCookie: false
   },
   system: {
@@ -40,32 +40,30 @@ export const loginRequest = {
   scopes: ["openid", "profile", "offline_access"]
 };
 
-// 🚀 Create and export MSAL instance
+// 🚀 MSAL Instance
 export const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-// ✅ Initialize MSAL before login
+// ✅ Initialize MSAL on startup (optional for popup flow)
 export const initializeMsal = async () => {
   try {
     await msalInstance.initialize();
-    console.log("MSAL initialized successfully ✅");
+    console.log("✅ MSAL initialized");
   } catch (error) {
     console.error("❌ MSAL initialization failed:", error);
     throw error;
   }
 };
 
-// ✅ Login Helper (Now includes initialization check)
+// 🔐 Login with Microsoft (popup flow)
 export const handleMicrosoftLogin = async () => {
   try {
-    // Ensure MSAL is initialized
-    if (!msalInstance.getActiveAccount()) {
-      await initializeMsal();
-    }
+    await initializeMsal(); // ensure it's initialized
 
-    // Try logging in
     const response = await msalInstance.loginPopup(loginRequest);
     const account = response.account;
-    msalInstance.setActiveAccount(account);  // Set active account
+    msalInstance.setActiveAccount(account);
+
+    console.log("✅ Login successful:", account);
 
     return {
       name: account.name,
@@ -75,4 +73,41 @@ export const handleMicrosoftLogin = async () => {
     console.error("❌ Microsoft login failed:", error);
     throw error;
   }
+};
+
+// 🔓 Logout
+export const handleLogout = () => {
+  const logoutRequest = {
+    account: msalInstance.getActiveAccount()
+  };
+  msalInstance.logoutRedirect(logoutRequest);
+};
+
+// 🎟️ Get Access Token
+export const getToken = async () => {
+  const account = msalInstance.getActiveAccount();
+  if (!account) {
+    throw new Error("No active account");
+  }
+
+  const tokenRequest = {
+    ...loginRequest,
+    account
+  };
+
+  try {
+    const response = await msalInstance.acquireTokenSilent(tokenRequest);
+    return response.accessToken;
+  } catch (error) {
+    if (error instanceof msal.InteractionRequiredAuthError) {
+      const response = await msalInstance.acquireTokenPopup(tokenRequest);
+      return response.accessToken;
+    }
+    throw error;
+  }
+};
+
+// 🕵️ Check if user is authenticated
+export const isAuthenticated = () => {
+  return !!msalInstance.getActiveAccount();
 };
