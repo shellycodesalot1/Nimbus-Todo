@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { addTask, deleteTask, editTask } from './api/azureFunctions';
+import { addTask, deleteTask,} from './api/azureFunctions';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import './Dashboard.css';
 
