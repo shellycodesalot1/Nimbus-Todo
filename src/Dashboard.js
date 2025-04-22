@@ -91,7 +91,7 @@ const Dashboard = () => {
     try {
       // Convert frontend status to backend completed boolean
       const completed = newStatus === 'Done';
-      const updated = await editTask(taskId, { completed });
+      //const updated = await editTask(taskId, { completed });
       
       // Update local state
       setTasks(tasks.map((task) => 
