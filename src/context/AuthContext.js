@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { msalInstance, loginRequest } from "../azure";
+import { msalInstance, loginRequest } from "../msal"; // <-- still from msal.js
 import { EventType } from "@azure/msal-browser";
 
 const AuthContext = createContext(null);
@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
       setUser({
         name: account.name,
         username: account.username,
+        localAccountId: account.localAccountId, // ✅ Now added
       });
     } catch (err) {
       console.error("❌ Login failed:", err);
@@ -43,6 +44,7 @@ export const AuthProvider = ({ children }) => {
           setUser({
             name: currentAccount.name,
             username: currentAccount.username,
+            localAccountId: currentAccount.localAccountId, // ✅ Now added
           });
         }
       } catch (err) {
@@ -60,6 +62,7 @@ export const AuthProvider = ({ children }) => {
         setUser({
           name: event.payload.account.name,
           username: event.payload.account.username,
+          localAccountId: event.payload.account.localAccountId, // ✅ Now added
         });
       }
     });

@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "./context/AuthContext";
+import AnalyticsPage from "./AnalyticsPage";
 import {
   fetchUserTasks,
-  createNewTask,
+  addTask,
   deleteTask,
+  editTask,
+  addFocusSession,
 } from "./api/azureFunctions";
 import {
   PresentationBarChart02Icon,
   CheckListIcon,
   Delete01Icon,
   Menu01Icon,
+  Logout01Icon,
 } from "hugeicons-react";
 import "./Dashboard.css";
 
@@ -17,7 +21,7 @@ const Dashboard = () => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({
-    title: "",
+    description: "",
     priority: "Low",
     source: "",
   });
@@ -32,7 +36,9 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (user) {
-      fetchUserTasks(user.uid).then(setTasks);
+      fetchUserTasks(user.localAccountId)
+        .then(setTasks)
+        .catch((error) => console.error("Failed to fetch tasks:", error));
     }
   }, [user]);
 
@@ -42,6 +48,17 @@ const Dashboard = () => {
       timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     } else if (isFocusRunning && timeLeft === 0) {
       setIsFocusRunning(false);
+      try {
+        addFocusSession({
+          userId: user.localAccountId,
+          focusMinutes,
+          breakMinutes,
+          autoBreak,
+          status: "completed",
+        });
+      } catch (error) {
+        console.error("Failed to log completed focus session:", error);
+      }
       if (autoBreak) {
         setTimeout(() => {
           setTimeLeft(breakMinutes * 60);
@@ -52,9 +69,20 @@ const Dashboard = () => {
     return () => clearInterval(timer);
   }, [isFocusRunning, timeLeft, autoBreak, breakMinutes]);
 
-  const startFocus = () => {
+  const startFocus = async () => {
     setTimeLeft(focusMinutes * 60);
     setIsFocusRunning(true);
+    try {
+      await addFocusSession({
+        userId: user.localAccountId,
+        focusMinutes,
+        breakMinutes,
+        autoBreak,
+        status: "started",
+      });
+    } catch (error) {
+      console.error("Failed to log focus session:", error);
+    }
   };
 
   const pauseFocus = () => setIsFocusRunning(false);
@@ -73,30 +101,97 @@ const Dashboard = () => {
   };
 
   const handleCreateTask = async () => {
-    if (!newTask.title.trim()) return;
-    const updatedTasks = await createNewTask(user.uid, newTask);
-    setTasks(updatedTasks);
-    setNewTask({ title: "", priority: "Low", source: "" });
-    setShowTaskForm(false);
+    if (!newTask.description.trim()) return;
+    try {
+      await addTask({
+        description: newTask.description,
+        priority: newTask.priority,
+        source: newTask.source,
+        userId: user.localAccountId,
+        status: "To Do",
+      });
+      const updatedTasks = await fetchUserTasks(user.localAccountId);
+      setTasks(updatedTasks);
+      setNewTask({ description: "", priority: "Low", source: "" });
+      setShowTaskForm(false);
+    } catch (error) {
+      console.error("Failed to create task:", error);
+    }
   };
 
   const handleDeleteTask = async (taskId) => {
-    await deleteTask(taskId);
-    const updatedTasks = await fetchUserTasks(user.uid);
-    setTasks(updatedTasks);
+    try {
+      await deleteTask(taskId);
+      const updatedTasks = await fetchUserTasks(user.localAccountId);
+      setTasks(updatedTasks);
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+    }
   };
 
-  const toggleTaskForm = () => {
-    setShowTaskForm(!showTaskForm);
-  };
-
-  const filteredTasks = tasks.filter(
-    (task) => filter === "All" || task.priority === filter
+  const pendingTasks = tasks.filter(
+    (task) =>
+      task.status !== "Completed" &&
+      (filter === "All" || task.priority === filter)
   );
+
+  const completedTasks = tasks.filter(
+    (task) =>
+      task.status === "Completed" &&
+      (filter === "All" || task.priority === filter)
+  );
+
+  const renderTaskList = (taskList) =>
+    taskList.map((task) => (
+      <div className="task-card" key={task.id}>
+        <div className="task-left">
+          <div className="checkbox-container">
+            <input
+              type="checkbox"
+              className="task-checkbox"
+              checked={task.status === "Completed"}
+              onChange={async (e) => {
+                try {
+                  const newStatus = e.target.checked ? "Completed" : "To Do";
+                  await editTask(task.id, user.localAccountId, {
+                    status: newStatus,
+                  });
+                  const updatedTasks = await fetchUserTasks(
+                    user.localAccountId
+                  );
+                  setTasks(updatedTasks);
+                } catch (error) {
+                  console.error("Failed to update task status:", error);
+                }
+              }}
+            />
+          </div>
+          <div className="task-content">
+            <div className="task-source">
+              <Menu01Icon size={14} /> {task.source || "Nimbus Todo"}
+            </div>
+            <div className="task-title">{task.description}</div>
+          </div>
+        </div>
+        <div className="task-actions">
+          <div className={`priority-pill ${task.priority.toLowerCase()}`}>
+            <span className="priority-dot"></span>
+            {task.priority}
+            <span className="dropdown-arrow">\u25BE</span>
+          </div>
+          <button
+            className="trash-button"
+            onClick={() => handleDeleteTask(task.id)}
+          >
+            <Delete01Icon size={18} />
+          </button>
+        </div>
+      </div>
+    ));
 
   const renderMainContent = () => {
     if (selectedSection === "analytics") {
-      return <div className="placeholder">Analytics View Coming Soon</div>;
+      return <AnalyticsPage user={user} />;
     }
 
     return (
@@ -105,10 +200,10 @@ const Dashboard = () => {
           {showTaskForm && (
             <div className="task-form-card">
               <input
-                placeholder="Task title"
-                value={newTask.title}
+                placeholder="Task description"
+                value={newTask.description}
                 onChange={(e) =>
-                  setNewTask({ ...newTask, title: e.target.value })
+                  setNewTask({ ...newTask, description: e.target.value })
                 }
               />
               <input
@@ -132,7 +227,10 @@ const Dashboard = () => {
                 <button onClick={handleCreateTask} className="add-button">
                   Add Task
                 </button>
-                <button onClick={toggleTaskForm} className="cancel-button">
+                <button
+                  onClick={() => setShowTaskForm(false)}
+                  className="cancel-button"
+                >
                   Cancel
                 </button>
               </div>
@@ -141,47 +239,18 @@ const Dashboard = () => {
 
           <div className="tasks-section">
             <div className="task-group">
-              <h2>Today's Tasks</h2>
-              {filteredTasks.map((task) => (
-                <div className="task-card" key={task.id}>
-                  <div className="task-left">
-                    <div className="checkbox-container">
-                      <input type="checkbox" className="task-checkbox" />
-                    </div>
-                    <div className="task-content">
-                      <div className="task-source">
-                        <Menu01Icon size={14} /> {task.source || "Nimbus Todo"}
-                      </div>
-                      <div className="task-title">
-                        {task.description || task.title}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="task-actions">
-                    <div
-                      className={`priority-pill ${task.priority.toLowerCase()}`}
-                    >
-                      <span className="priority-dot"></span>
-                      {task.priority}
-                      <span className="dropdown-arrow">▾</span>
-                    </div>
-                    <button
-                      className="trash-button"
-                      onClick={() => handleDeleteTask(task.id)}
-                    >
-                      <Delete01Icon size={18} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+              <h2>Pending Tasks</h2>
+              {renderTaskList(pendingTasks)}
             </div>
-          </div>
-
-          <div className="action-buttons">
-            <button className="start-session-btn">Start Session</button>
-            <button className="add-task-btn" onClick={toggleTaskForm}>
-              <span className="plus-icon">+</span> Add Task
-            </button>
+            <div className="task-group">
+              <h2>
+                Completed Tasks{" "}
+                <span className="completed-count-badge">
+                  {completedTasks.length}
+                </span>
+              </h2>
+              {renderTaskList(completedTasks)}
+            </div>
           </div>
         </div>
 
@@ -234,6 +303,7 @@ const Dashboard = () => {
     <div className="dashboard-wrapper">
       <aside className="sidebar">
         <div className="brand">Nimbus Todo</div>
+
         <div className="menu">
           <div className="menu-section">
             <div
@@ -253,9 +323,30 @@ const Dashboard = () => {
               <PresentationBarChart02Icon className="menu-icon" /> Analytics
             </div>
           </div>
+
+          <div className="sidebar-buttons">
+            <button className="sidebar-btn" onClick={startFocus}>
+              Start Session
+            </button>
+            <button
+              className="sidebar-btn"
+              onClick={() => setShowTaskForm(true)}
+            >
+              + Add Task
+            </button>
+          </div>
         </div>
-        <div className="user-footer">
-          <span>{user?.name || "User"}</span>
+
+        <div className="sidebar-footer">
+          <button
+            className="logout-btn"
+            onClick={() => console.log("Logging out...")}
+          >
+            <Logout01Icon className="logout-icon" /> Logout
+          </button>
+          <div className="user-footer">
+            <span>{user?.name || "User"}</span>
+          </div>
         </div>
       </aside>
 

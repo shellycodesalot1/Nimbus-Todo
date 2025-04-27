@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { handleMicrosoftLogin } from "./azure"; // Adjust path if needed
+import { handleMicrosoftLogin } from "./msal"; 
 import { useAuth } from "./context/AuthContext";
 import "./LoginPage.css"; 
 
