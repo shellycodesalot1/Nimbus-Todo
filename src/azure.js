@@ -11,6 +11,7 @@ export const fetchUserTasks = async (userId) => {
       const errorText = await res.text();
       console.error("API Error Response:", errorText);
       throw new Error(`Failed to fetch tasks: ${res.status} ${errorText}`);
+
     }
 
     const data = await res.json();
@@ -21,6 +22,7 @@ export const fetchUserTasks = async (userId) => {
     return []; // Return empty array to prevent UI errors
   }
 };
+
 
 // ✅ Add a new task
 export const addTask = async (taskData) => {
@@ -43,11 +45,13 @@ export const addTask = async (taskData) => {
     const data = await res.json();
     console.log("Task added successfully:", data);
     return data;
+
   } catch (error) {
     console.error("Error adding task:", error);
     throw error;
   }
 };
+
 
 // ✅ Delete a task by task ID
 export const deleteTask = async (taskId) => {
@@ -66,11 +70,14 @@ export const deleteTask = async (taskId) => {
     const responseText = await res.text();
     console.log("Task deleted successfully:", responseText);
     return responseText;
+
+
   } catch (error) {
     console.error("Error deleting task:", error);
     throw error;
   }
 };
+
 
 // ✅ Edit a task by task ID
 export const editTask = async (taskId, updatedData) => {

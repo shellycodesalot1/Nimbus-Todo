@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useAuth } from "./context/AuthContext";
 import AnalyticsPage from "./AnalyticsPage";
@@ -129,6 +130,7 @@ const Dashboard = () => {
     }
   };
 
+
   const pendingTasks = tasks.filter(
     (task) =>
       task.status !== "Completed" &&
@@ -192,6 +194,7 @@ const Dashboard = () => {
   const renderMainContent = () => {
     if (selectedSection === "analytics") {
       return <AnalyticsPage user={user} />;
+
     }
 
     return (
