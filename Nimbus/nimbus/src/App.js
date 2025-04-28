@@ -6,7 +6,6 @@ import SignUp from "./SignUp";
 
 function App() {
   return (
-<<<<<<< Updated upstream
 
     <Router>
       <Routes>
@@ -18,25 +17,6 @@ function App() {
     </Router>
   );
 }
-=======
-    <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-      </Router>
-    </AuthProvider>)
->>>>>>> Stashed changes
 
 // ✅ Add this line
 
@@ -82,5 +62,5 @@ function App() {
     );
   }
 
-}
+
   export default App;
