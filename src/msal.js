@@ -18,7 +18,8 @@ const msalConfig = {
 export const msalInstance = new PublicClientApplication(msalConfig);
 
 export const loginRequest = {
-  scopes: ["User.Read"],
+  scopes: ["User.Read", "openid", "profile"],
+  responseType: "id_token token"
 };
 
 // ✅ No initialize needed if using loginPopup
