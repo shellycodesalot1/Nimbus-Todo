@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
     if (currentAccount) {
       msalInstance.logoutPopup({
         account: currentAccount,
-        postLogoutRedirectUri: "/",
+        postLogoutRedirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
       });
       setUser(null);
     }

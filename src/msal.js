@@ -5,7 +5,8 @@ const msalConfig = {
   auth: {
     clientId: "6438927f-5f93-41f7-80aa-d6516cd19114",
     authority: "https://login.microsoftonline.com/common",
-    redirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net/dashboard",
+    redirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
+    postLogoutRedirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
     navigateToLoginRequestUrl: true,
   },
   cache: {
