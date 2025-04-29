@@ -10,7 +10,7 @@ import LoginPage from "./LoginPage"; // Login form
 import SignUp from "./SignUp"; // Sign-up form
 import Dashboard from "./Dashboard"; // Protected dashboard
 import { AuthProvider, useAuth } from "./context/AuthContext";
-import "./App.css";
+
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
