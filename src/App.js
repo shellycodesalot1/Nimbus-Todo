@@ -1,13 +1,18 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import HomePage from "./HomePage";
-import LoginPage from "./LoginPage";
-import SignUp from "./SignUp";
-import Dashboard from "./Dashboard";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import HomePage from "./HomePage"; // Public landing page
+import LoginPage from "./LoginPage"; // Login form
+import SignUp from "./SignUp"; // Sign-up form
+import Dashboard from "./Dashboard"; // Protected dashboard
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import "./App.css";
 
-// Protected Route wrapper component
+// Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
