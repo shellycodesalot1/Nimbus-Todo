@@ -20,7 +20,7 @@ const COLORS = ["#5e5adb", "#d1d5db"]; // Purple and Gray for pie
 
 const AnalyticsPage = ({ user }) => {
   const [tasks, setTasks] = useState([]);
-  const [focusSessions, setFocusSessions] = useState([]); // Will be empty for now unless you fetch
+  const [focusSessions] = useState([]); // Will be empty for now unless you fetch
   const [selectedRange, setSelectedRange] = useState("Week");
 
   useEffect(() => {

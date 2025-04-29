@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { signUpWithAzure, loginWithAzure } from "./azure";
 import { useNavigate } from "react-router-dom";
 import "./SignUp.css";
 

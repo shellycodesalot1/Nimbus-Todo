@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useAuth } from "./context/AuthContext";
 import AnalyticsPage from "./AnalyticsPage";
@@ -68,7 +67,7 @@ const Dashboard = () => {
       }
     }
     return () => clearInterval(timer);
-  }, [isFocusRunning, timeLeft, autoBreak, breakMinutes]);
+  }, [isFocusRunning, timeLeft, autoBreak, breakMinutes, focusMinutes, user?.localAccountId]);
 
   const startFocus = async () => {
     setTimeLeft(focusMinutes * 60);
