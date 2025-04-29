@@ -1,113 +1,105 @@
-import * as msal from '@azure/msal-browser';
+// azure.js
+const API_BASE = "https://nimbustodo.azurewebsites.net/api";
 
-// 🔐 Azure B2C Config
-const b2cConfig = {
-  tenantName: "nimbustodo1",
-  clientId: "6438927f-5f93-41f7-80aa-d6516cd19114",
-  signUpSignInPolicy: "B2C_1_nimbussignup_signin",
-  authorityDomain: "b2clogin.com"
-};
+// ✅ Fetch all tasks for a user
+export const fetchUserTasks = async (userId) => {
+  try {
+    console.log("Fetching tasks for user:", userId);
+    const res = await fetch(`${API_BASE}/get_tasks?userId=${userId}`);
 
-// 🧭 Authority URLs
-const authorityBase = `https://${b2cConfig.tenantName}.${b2cConfig.authorityDomain}`;
-const authority = `${authorityBase}/${b2cConfig.tenantName}.onmicrosoft.com/${b2cConfig.signUpSignInPolicy}`;
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("API Error Response:", errorText);
+      throw new Error(`Failed to fetch tasks: ${res.status} ${errorText}`);
 
-// ⚙️ MSAL Configuration
-const msalConfig = {
-  auth: {
-    clientId: b2cConfig.clientId,
-    authority,
-    knownAuthorities: [authorityBase],
-    redirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
-    postLogoutRedirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
-    navigateToLoginRequestUrl: true
-  },
-  cache: {
-    cacheLocation: "localStorage", // or "sessionStorage" if preferred
-    storeAuthStateInCookie: false
-  },
-  system: {
-    allowRedirectInIframe: true,
-    loggerOptions: {
-      loggerCallback: (level, message) => console.log(`MSAL: ${message}`),
-      logLevel: msal.LogLevel.Warning
     }
-  }
-};
 
-// 🔑 Login Scopes
-export const loginRequest = {
-  scopes: ["openid", "profile", "offline_access"]
-};
-
-// 🚀 MSAL Instance
-export const msalInstance = new msal.PublicClientApplication(msalConfig);
-
-// ✅ Initialize MSAL on startup (optional for popup flow)
-export const initializeMsal = async () => {
-  try {
-    await msalInstance.initialize();
-    console.log("✅ MSAL initialized");
+    const data = await res.json();
+    console.log("Tasks fetched successfully:", data);
+    return data;
   } catch (error) {
-    console.error("❌ MSAL initialization failed:", error);
-    throw error;
+    console.error("Error fetching tasks:", error);
+    return []; // Return empty array to prevent UI errors
   }
 };
 
-// 🔐 Login with Microsoft (popup flow)
-export const handleMicrosoftLogin = async () => {
+
+// ✅ Add a new task
+export const addTask = async (taskData) => {
   try {
-    await initializeMsal(); // ensure it's initialized
+    console.log("Adding task with data:", taskData);
+    const res = await fetch(`${API_BASE}/add_task`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(taskData),
+    });
 
-    const response = await msalInstance.loginPopup(loginRequest);
-    const account = response.account;
-    msalInstance.setActiveAccount(account);
+    console.log("API Response Status:", res.status);
 
-    console.log("✅ Login successful:", account);
-
-    return {
-      name: account.name,
-      username: account.username
-    };
-  } catch (error) {
-    console.error("❌ Microsoft login failed:", error);
-    throw error;
-  }
-};
-
-// 🔓 Logout
-export const handleLogout = () => {
-  const logoutRequest = {
-    account: msalInstance.getActiveAccount()
-  };
-  msalInstance.logoutRedirect(logoutRequest);
-};
-
-// 🎟️ Get Access Token
-export const getToken = async () => {
-  const account = msalInstance.getActiveAccount();
-  if (!account) {
-    throw new Error("No active account");
-  }
-
-  const tokenRequest = {
-    ...loginRequest,
-    account
-  };
-
-  try {
-    const response = await msalInstance.acquireTokenSilent(tokenRequest);
-    return response.accessToken;
-  } catch (error) {
-    if (error instanceof msal.InteractionRequiredAuthError) {
-      const response = await msalInstance.acquireTokenPopup(tokenRequest);
-      return response.accessToken;
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("API Error Response:", errorText);
+      throw new Error(`Failed to add task: ${res.status} ${errorText}`);
     }
+
+    const data = await res.json();
+    console.log("Task added successfully:", data);
+    return data;
+
+  } catch (error) {
+    console.error("Error adding task:", error);
     throw error;
   }
 };
 
-// 🕵️ Check if user is authenticated
-export const isAuthenticated = () => {
-  return !!msalInstance.getActiveAccount();
+
+// ✅ Delete a task by task ID
+export const deleteTask = async (taskId) => {
+  try {
+    console.log("Deleting task:", taskId);
+    const res = await fetch(`${API_BASE}/delete_task/${taskId}`, {
+      method: "DELETE",
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("API Error Response:", errorText);
+      throw new Error(`Failed to delete task: ${res.status} ${errorText}`);
+    }
+
+    const responseText = await res.text();
+    console.log("Task deleted successfully:", responseText);
+    return responseText;
+
+
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    throw error;
+  }
+};
+
+
+// ✅ Edit a task by task ID
+export const editTask = async (taskId, updatedData) => {
+  try {
+    console.log("Updating task:", taskId, "with data:", updatedData);
+    const res = await fetch(`${API_BASE}/edit_task/${taskId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updatedData),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("API Error Response:", errorText);
+      throw new Error(`Failed to edit task: ${res.status} ${errorText}`);
+    }
+
+    const data = await res.json();
+    console.log("Task updated successfully:", data);
+    return data;
+  } catch (error) {
+    console.error("Error editing task:", error);
+    throw error;
+  }
 };
