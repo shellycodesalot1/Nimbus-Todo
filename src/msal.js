@@ -14,12 +14,24 @@ const msalConfig = {
     cacheLocation: "sessionStorage", // or "localStorage"
     storeAuthStateInCookie: false,
   },
+  system: {
+    allowNativeBroker: false,
+    windowHashTimeout: 60000
+  }
 };
 
 export const msalInstance = new PublicClientApplication(msalConfig);
 
+// Handle the response from auth
+if (!msalInstance.getActiveAccount() && window.location.hash) {
+  msalInstance.handlePopupPromise().catch(error => {
+    console.error("Error handling popup:", error);
+  });
+}
+
 export const loginRequest = {
   scopes: ["openid", "profile"],
+  prompt: "select_account"
 };
 
 // ✅ No initialize needed if using loginPopup

@@ -1,46 +1,45 @@
 {
-    "routes": [
-      {
-        "route": "/.auth/*",
-        "statusCode": 200
-      },
-      {
-        "route": "/login",
-        "serve": "/index.html",
-        "statusCode": 200
-      },
-      {
-        "route": "/dashboard",
-        "serve": "/index.html",
-        "statusCode": 200
-      },
-      {
-        "route": "/*",
-        "serve": "/index.html",
-        "statusCode": 200,
-        "allowedRoles": ["anonymous", "authenticated"]
-      }
-    ],
-    "navigationFallback": {
+  "routes": [
+    {
+      "route": "/.auth/*",
+      "statusCode": 200
+    },
+    {
+      "route": "/login",
+      "serve": "/index.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/dashboard",
+      "serve": "/index.html",
+      "statusCode": 200
+    },
+    {
+      "route": "/*",
+      "serve": "/index.html",
+      "statusCode": 200,
+      "allowedRoles": ["anonymous", "authenticated"]
+    }
+  ],
+  "navigationFallback": {
+    "rewrite": "/index.html",
+    "exclude": ["/images/*.{png,jpg,gif}", "/css/*", "/api/*"]
+  },
+  "responseOverrides": {
+    "404": {
       "rewrite": "/index.html",
-      "exclude": ["/images/*.{png,jpg,gif}", "/css/*", "/api/*"]
-    },
-    "responseOverrides": {
-      "404": {
-        "rewrite": "/index.html",
-        "statusCode": 200
-      }
-    },
-    "auth": {
-      "identityProviders": {
-        "azureActiveDirectory": {
-          "enabled": true,
-          "registration": {
-            "openIdIssuer": "https://login.microsoftonline.com/common",
-            "clientId": "6438927f-5f93-41f7-80aa-d6516cd19114"
-          }
+      "statusCode": 200
+    }
+  },
+  "auth": {
+    "identityProviders": {
+      "azureActiveDirectory": {
+        "enabled": true,
+        "registration": {
+          "openIdIssuer": "https://nimbustodo1.b2clogin.com/nimbustodo1.onmicrosoft.com/B2C_1_nimbussignup_signin",
+          "clientId": "6438927f-5f93-41f7-80aa-d6516cd19114"
         }
       }
     }
+  }
 }
-  
