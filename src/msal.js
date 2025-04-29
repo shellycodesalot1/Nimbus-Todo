@@ -7,7 +7,7 @@ const msalConfig = {
     authority: "https://login.microsoftonline.com/common",
     redirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
     postLogoutRedirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
-    navigateToLoginRequestUrl: true,
+    navigateToLoginRequestUrl: false,
   },
   cache: {
     cacheLocation: "sessionStorage", // or "localStorage"
