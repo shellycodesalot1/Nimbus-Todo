@@ -4,7 +4,8 @@ import { PublicClientApplication } from "@azure/msal-browser";
 const msalConfig = {
   auth: {
     clientId: "6438927f-5f93-41f7-80aa-d6516cd19114",
-    authority: "https://login.microsoftonline.com/common",
+    authority: "https://nimbustodo1.b2clogin.com/nimbustodo1.onmicrosoft.com/B2C_1_nimbussignup_signin",
+    knownAuthorities: ["nimbustodo1.b2clogin.com"],
     redirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
     postLogoutRedirectUri: "https://ashy-grass-0bd7dc61e.azurestaticapps.net",
     navigateToLoginRequestUrl: false,
@@ -18,8 +19,7 @@ const msalConfig = {
 export const msalInstance = new PublicClientApplication(msalConfig);
 
 export const loginRequest = {
-  scopes: ["User.Read", "openid", "profile"],
-  responseType: "id_token token"
+  scopes: ["openid", "profile"],
 };
 
 // ✅ No initialize needed if using loginPopup
